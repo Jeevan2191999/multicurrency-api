@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CurrencyX — Global Currency Platform</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav>
+        <div class="nav-inner">
+            <div class="logo">CurrencyX</div>
+            <div class="nav-links">
+                <a href="/">Rates</a>
+                <a href="/">Convert</a>
+                <a href="/">History</a>
+            </div>
+            <div class="nav-badge">Live Rates</div>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-inner">
+            <p class="hero-tag">Multi-Currency Platform</p>
+            <h1>Convert currencies<br>at real-time rates</h1>
+            <p class="hero-sub">Supporting GBP, USD, EUR, AED, JPY and more across global markets</p>
+        </div>
+    </header>
+
+    <main class="container">
+
+        <!-- Live Rates Bar -->
+        <section class="rates-bar">
+            <div class="rates-header">
+                <h2>Live Exchange Rates</h2>
+                <span class="updated">Updated {{ last_updated }}</span>
+            </div>
+            <div class="rates-grid">
+                {% for currency, rate in rates.items() %}
+                {% if currency != "GBP" %}
+                <div class="rate-card">
+                    <div class="rate-flag">{{ currency }}</div>
+                    <div class="rate-value">{{ "%.4f"|format(rate) }}</div>
+                    <div class="rate-label">GBP / {{ currency }}</div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- Converter -->
+        <section class="converter-section">
+            <div class="converter-card">
+                <h2>Currency Converter</h2>
+                <p class="converter-sub">Fast, accurate, real-time conversions</p>
+
+                {% if result %}
+                <div class="result-banner">
+                    <div class="result-main">
+                        <span class="result-amount">{{ result.amount }} {{ result.from }}</span>
+                        <span class="result-arrow">→</span>
+                        <span class="result-converted">{{ result.converted }} {{ result.to }}</span>
+                    </div>
+                    <div class="result-rate">Exchange rate: 1 {{ result.from }} = {{ result.rate }} {{ result.to }}</div>
+                </div>
+                {% endif %}
+
+                <form method="POST" action="/convert" class="convert-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Amount</label>
+                            <input type="number" name="amount" placeholder="1000.00" 
+                                   step="0.01" min="0.01" required value="{{ result.amount if result else '' }}">
+                        </div>
+                        <div class="form-group">
+                            <label>From</label>
+                            <select name="from_currency">
+                                {% for c in currencies %}
+                                <option value="{{ c }}" {% if result and result.from == c %}selected{% endif %}>{{ c }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>To</label>
+                            <select name="to_currency">
+                                {% for c in currencies %}
+                                <option value="{{ c }}" {% if result and result.to == c %}selected{% elif c == "USD" and not result %}selected{% endif %}>{{ c }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="convert-btn">Convert Now</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Transaction History -->
+        <section class="history-section">
+            <h2>Recent Transactions</h2>
+            {% if transactions %}
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>Amount</th>
+                            <th>Converted</th>
+                            <th>Rate</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for t in transactions %}
+                        <tr>
+                            <td>{{ t.created_at.strftime("%d %b %Y %H:%M") }}</td>
+                            <td><span class="currency-tag">{{ t.from_currency }}</span></td>
+                            <td><span class="currency-tag">{{ t.to_currency }}</span></td>
+                            <td>{{ "%.2f"|format(t.amount) }}</td>
+                            <td>{{ "%.2f"|format(t.converted_amount) }}</td>
+                            <td>{{ "%.4f"|format(t.rate) }}</td>
+                            <td><span class="status-badge">Completed</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">No transactions yet. Make your first conversion above.</div>
+            {% endif %}
+        </section>
+
+    </main>
+
+    <footer>
+        <div class="footer-inner">
+            <div class="footer-logo">CurrencyX</div>
+            <p>Built by Jeevan Nagaraj &nbsp;|&nbsp; github.com/Jeevan2191999</p>
+        </div>
+    </footer>
+</body>
+</html>
